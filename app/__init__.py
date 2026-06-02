@@ -1,0 +1,1 @@
+"""PhishGuard application package."""

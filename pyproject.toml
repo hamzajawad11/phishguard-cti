@@ -1,0 +1,5 @@
+[tool.pytest.ini_options]
+# Make the project root importable so tests can `import app.*` when run with
+# either `pytest` or `python -m pytest` from the repository root.
+pythonpath = ["."]
+testpaths = ["tests"]

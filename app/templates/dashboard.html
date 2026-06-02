@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - PhishGuard{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <p class="eyebrow">Threat overview</p>
+    <h1>Phishing Intelligence Dashboard</h1>
+  </div>
+  <a class="primary-action" href="/analyze">Analyze URLs</a>
+</section>
+
+<section class="metric-grid">
+  <article class="metric">
+    <span>Total scans</span>
+    <strong>{{ total }}</strong>
+  </article>
+  <article class="metric">
+    <span>Average risk</span>
+    <strong>{{ avg_score }}</strong>
+  </article>
+  {% for sev in ["Critical", "High", "Medium", "Low"] %}
+  <article class="metric">
+    <span>{{ sev }}</span>
+    <strong>{{ severity_counts.get(sev, 0) }}</strong>
+  </article>
+  {% endfor %}
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel threat-panel">
+    <div class="panel-head">
+      <h2>Severity Distribution</h2>
+    </div>
+    <div class="bar-chart" data-chart='{{ severity_counts | tojson }}'>
+      {% for sev in ["Critical", "High", "Medium", "Low"] %}
+      {% set count = severity_counts.get(sev, 0) %}
+      <div class="bar-row">
+        <span>{{ sev }}</span>
+        <div><i class="sev-{{ sev|lower }}" style="width: {{ [[count * 14, 4]|max, 100]|min }}%"></i></div>
+        <b>{{ count }}</b>
+      </div>
+      {% endfor %}
+    </div>
+  </article>
+
+  <article class="panel">
+    <div class="panel-head">
+      <h2>7-Day Risk Trend</h2>
+    </div>
+    <div class="trend-chart">
+      {% for day in trend %}
+      <div class="trend-col">
+        <div class="trend-bars">
+          <i class="trend-total" style="height: {{ day.count_height }}px"></i>
+          <i class="trend-high" style="height: {{ day.high_height }}px"></i>
+        </div>
+        <span>{{ day.label }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel">
+    <div class="panel-head">
+      <h2>Top Domains</h2>
+    </div>
+    <div class="domain-list">
+      {% for domain, count in top_domains %}
+      <div>
+        <span>{{ domain or "unknown" }}</span>
+        <b>{{ count }}</b>
+      </div>
+      {% else %}
+      <p class="empty">No domains analyzed yet.</p>
+      {% endfor %}
+    </div>
+  </article>
+
+  <article class="panel">
+    <div class="panel-head">
+      <h2>Intel Source Health</h2>
+    </div>
+    <div class="source-grid">
+      {% for source in source_health %}
+      <div class="source-card">
+        <strong>{{ source.label }}</strong>
+        <span>{{ source.status }}</span>
+        <small>{{ source.hits }} hit(s) across recent scans</small>
+      </div>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>Recent High-Risk Findings</h2>
+    <a href="/history?severity=High">View history</a>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Severity</th>
+          <th>Score</th>
+          <th>Domain</th>
+          <th>URL</th>
+          <th>Report</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in high_risk %}
+        <tr>
+          <td><span class="badge sev-{{ item.severity|lower }}">{{ item.severity }}</span></td>
+          <td>{{ item.score }}</td>
+          <td>{{ item.domain }}</td>
+          <td class="url-cell">{{ item.normalized_url }}</td>
+          <td><a href="/analysis/{{ item.id }}">Open</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="empty">No high-risk findings yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>Recent Activity</h2>
+    <a href="/history">All scans</a>
+  </div>
+  <div class="activity-list">
+    {% for item in recent %}
+    <a href="/analysis/{{ item.id }}">
+      <span class="badge sev-{{ item.severity|lower }}">{{ item.severity }}</span>
+      <strong>{{ item.domain }}</strong>
+      <small>{{ item.normalized_url }}</small>
+    </a>
+    {% else %}
+    <p class="empty">Use the analyzer to create the first scan.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

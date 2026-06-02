@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Analyze - PhishGuard{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <p class="eyebrow">URL and domain intelligence</p>
+    <h1>Analyze Suspicious URLs or Domains</h1>
+  </div>
+</section>
+
+<section class="panel">
+  <form method="post" action="/analyze" class="analysis-form">
+    <label for="input_text">Paste suspicious URLs/domains, one per line</label>
+    <textarea id="input_text" name="input_text" rows="9" placeholder="paypal-login-check.xyz&#10;https://secure-update-example.top/login&#10;http://verify-account.example/path?redirect=http://192.168.1.10">{{ input_text }}</textarea>
+    <div class="form-actions">
+      <button type="submit" class="primary-action">Run CTI Analysis</button>
+      <span>Built mainly for URLs/domains. CVEs, hashes, and IPs are extracted as supporting IOCs when present.</span>
+    </div>
+  </form>
+</section>
+
+{% if results is not none %}
+<section class="panel">
+  <div class="panel-head">
+    <h2>URL/Domain Analysis Results</h2>
+    <a href="/history">View saved history</a>
+  </div>
+  <div class="result-grid">
+    {% for item in results %}
+    <article class="result-card">
+      <div class="result-top">
+        <span class="badge sev-{{ item.severity|lower }}">{{ item.severity }}</span>
+        <strong>{{ item.score }}/100</strong>
+      </div>
+      <h3>{{ item.domain or "unknown domain" }}</h3>
+      <p>{{ item.normalized_url }}</p>
+      <div class="mini-meta">
+        <span>Saved to history</span>
+        <span>CTI analysis complete</span>
+      </div>
+      <a href="/analysis/{{ item.id }}">Open CTI report</a>
+    </article>
+    {% else %}
+    <p class="empty">No URLs or domains were found. Paste a domain like example.com or a full URL.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

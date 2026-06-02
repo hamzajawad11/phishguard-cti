@@ -1,0 +1,12 @@
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+uvicorn.log
+uvicorn.err.log
+data/*.db
+dashboard.png
+report.png
+advanced-dashboard.png
+advanced-report.png

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}History - PhishGuard{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <p class="eyebrow">Saved intelligence</p>
+    <h1>Analysis History</h1>
+  </div>
+  <a class="primary-action" href="/export/csv">Download CSV</a>
+</section>
+
+<section class="panel">
+  <form class="filters" method="get" action="/history">
+    <input type="search" name="q" value="{{ q }}" placeholder="Search URL or domain">
+    <select name="severity">
+      <option value="">All severities</option>
+      {% for sev in ["Critical", "High", "Medium", "Low"] %}
+      <option value="{{ sev }}" {{ "selected" if severity == sev else "" }}>{{ sev }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">Filter</button>
+  </form>
+</section>
+
+<section class="panel">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Severity</th>
+          <th>Score</th>
+          <th>Domain</th>
+          <th>URL</th>
+          <th>Report</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in analyses %}
+        <tr>
+          <td>{{ item.created_at.strftime("%Y-%m-%d %H:%M") if item.created_at else "" }}</td>
+          <td><span class="badge sev-{{ item.severity|lower }}">{{ item.severity }}</span></td>
+          <td>{{ item.score }}</td>
+          <td>{{ item.domain }}</td>
+          <td class="url-cell">{{ item.normalized_url }}</td>
+          <td><a href="/analysis/{{ item.id }}">Open</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="empty">No records match the current filters.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+{% block title %}Report - PhishGuard{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <p class="eyebrow">CTI report #{{ analysis.id }}</p>
+    <h1>{{ analysis.domain or "URL Report" }}</h1>
+  </div>
+  <div class="action-row">
+    <a class="primary-action" href="/analysis/{{ analysis.id }}/export/html">HTML Report</a>
+    <a class="secondary-action" href="/analysis/{{ analysis.id }}/export/json">JSON</a>
+  </div>
+</section>
+
+<section class="report-hero">
+  <article class="panel score-panel">
+    <div class="score-ring" style="--score: {{ analysis.score * 3.6 }}deg">
+      <strong>{{ analysis.score }}</strong>
+      <small>/100</small>
+    </div>
+    <span class="badge sev-{{ analysis.severity|lower }}">{{ analysis.severity }}</span>
+    <p>{{ recommendation }}</p>
+  </article>
+  <article class="panel">
+    <h2>Target Summary</h2>
+    <dl class="summary-list">
+      <dt>URL</dt><dd>{{ analysis.normalized_url }}</dd>
+      <dt>Domain</dt><dd>{{ analysis.domain }}</dd>
+      <dt>Created</dt><dd>{{ analysis.created_at.strftime("%Y-%m-%d %H:%M UTC") if analysis.created_at else "" }}</dd>
+    </dl>
+  </article>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel">
+    <div class="panel-head">
+      <h2>Live URL Resolution</h2>
+      <span class="status-pill">{{ enrichment.url_resolution.status if enrichment.url_resolution else "missing" }}</span>
+    </div>
+    {% set resolution = enrichment.url_resolution or {} %}
+    <dl class="summary-list">
+      <dt>Chosen URL</dt><dd>{{ resolution.url or analysis.normalized_url }}</dd>
+      <dt>Method</dt><dd>{{ resolution.detail or "Older report without live resolution data." }}</dd>
+    </dl>
+    {% if resolution.attempts %}
+    <div class="timeline">
+      {% for attempt in resolution.attempts %}
+      <div>
+        <b>{{ attempt.status_code or attempt.error or "No response" }}</b>
+        <span>{{ attempt.url }}</span>
+        <small>{{ "Reachable" if attempt.reachable else "Not reachable" }}</small>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </article>
+
+  <article class="panel">
+    <div class="panel-head">
+      <h2>Domain Intelligence</h2>
+      <span class="status-pill">{{ enrichment.domain_intel.status if enrichment.domain_intel else "missing" }}</span>
+    </div>
+    {% set domain_intel = enrichment.domain_intel or {} %}
+    {% set age_days = domain_intel.get("age_days") %}
+    <dl class="summary-list">
+      <dt>Registered Domain</dt><dd>{{ domain_intel.domain or analysis.domain }}</dd>
+      <dt>Created</dt><dd>{{ domain_intel.created_at or "Unknown" }}</dd>
+      <dt>Domain Age</dt><dd>{{ age_days if age_days is not none else "Unknown" }}{% if age_days is not none %} days{% endif %}</dd>
+      <dt>Registrar</dt><dd>{{ domain_intel.registrar or "Unknown" }}</dd>
+      <dt>Expiry</dt><dd>{{ domain_intel.expires_at or "Unknown" }}</dd>
+    </dl>
+  </article>
+
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel">
+    <div class="panel-head">
+      <h2>Redirect Trace</h2>
+      <span class="status-pill">{{ enrichment.redirects.status if enrichment.redirects else "missing" }}</span>
+    </div>
+    {% set redirects = enrichment.redirects or {} %}
+    <dl class="summary-list">
+      <dt>Final URL</dt><dd>{{ redirects.final_url or analysis.normalized_url }}</dd>
+      <dt>Final Domain</dt><dd>{{ redirects.final_domain or analysis.domain }}</dd>
+      <dt>Redirects</dt><dd>{{ redirects.redirect_count or 0 }}</dd>
+      <dt>Cross-Domain</dt><dd>{{ "Yes" if redirects.cross_domain else "No" }}</dd>
+    </dl>
+    {% if redirects.chain %}
+    <div class="timeline">
+      {% for hop in redirects.chain %}
+      <div><b>{{ hop.status_code }}</b><span>{{ hop.domain }}</span><small>{{ hop.location or hop.url }}</small></div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </article>
+</section>
+
+{% set optional_sources = enrichment.optional_sources or {} %}
+{% set sandbox = optional_sources.urlscan or {} %}
+{% set vt_files = optional_sources.virustotal_files or {} %}
+{% if sandbox.mode == "dynamic_submission" %}
+<section class="panel">
+  <div class="panel-head">
+    <h2>Dynamic Sandbox Analysis</h2>
+    <span class="status-pill">{{ sandbox.status }}</span>
+  </div>
+  <div class="sandbox-grid">
+    <div>
+      <dl class="summary-list">
+        <dt>Mode</dt><dd>Active urlscan.io browser scan</dd>
+        <dt>Visibility</dt><dd>{{ sandbox.submission.visibility or "unlisted" }}</dd>
+        <dt>Final URL</dt><dd>{{ sandbox.page.url or analysis.normalized_url }}</dd>
+        <dt>Page Title</dt><dd>{{ sandbox.page.title or "Unknown" }}</dd>
+        <dt>Page IP</dt><dd>{{ sandbox.page.ip or "Unknown" }}</dd>
+        <dt>urlscan Score</dt><dd>{{ sandbox.verdict.score or 0 }}</dd>
+      </dl>
+      <div class="sandbox-links">
+        {% if sandbox.submission.result %}<a href="{{ sandbox.submission.result }}" target="_blank" rel="noopener">Open urlscan result</a>{% endif %}
+        {% if sandbox.screenshot_url %}<a href="{{ sandbox.screenshot_url }}" target="_blank" rel="noopener">Screenshot</a>{% endif %}
+        {% if sandbox.dom_url %}<a href="{{ sandbox.dom_url }}" target="_blank" rel="noopener">DOM snapshot</a>{% endif %}
+      </div>
+    </div>
+    {% if sandbox.screenshot_url %}
+    <img class="sandbox-preview" src="{{ sandbox.screenshot_url }}" alt="urlscan screenshot for {{ analysis.domain }}">
+    {% endif %}
+  </div>
+
+  <h3>Observed Downloads</h3>
+  <div class="download-list">
+    {% for download in sandbox.downloads or [] %}
+    <article>
+      <strong>{{ download.filename or "Downloaded file" }}</strong>
+      <small>{{ download.url or "Download URL unavailable" }}</small>
+      <span>{{ download.mime_type or "unknown type" }}{% if download.size %} / {{ download.size }} bytes{% endif %}</span>
+      <div class="ioc-list">
+        {% for hash in download.hashes %}
+        <code>{{ hash }}</code>
+        {% endfor %}
+      </div>
+    </article>
+    {% else %}
+    <p class="empty">urlscan.io did not observe a file download during the scan.</p>
+    {% endfor %}
+  </div>
+
+  <h3>VirusTotal File Verdicts</h3>
+  <div class="source-evidence">
+    {% for match in vt_files.matches or [] %}
+    <div>
+      <b>{{ match.meaningful_name or match.type_description or "file hash" }}</b>
+      <small>{{ match.sha256 or match.indicator }}</small>
+      <span>{{ match.malicious or 0 }} malicious / {{ match.suspicious or 0 }} suspicious / {{ match.harmless or 0 }} harmless</span>
+    </div>
+    {% else %}
+    <p class="empty">{{ vt_files.detail or "No downloaded file hashes were available for VirusTotal." }}</p>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>Risk Evidence</h2>
+  </div>
+  <div class="finding-list">
+    {% for reason in reasons %}
+    <article>
+      <strong>{{ reason.label }}</strong>
+      <p>{{ reason.detail }}</p>
+      <span>+{{ reason.weight }} pts</span>
+    </article>
+    {% else %}
+    <p class="empty">No significant risk indicators were detected.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel">
+    <div class="panel-head">
+      <h2>Extracted IOCs</h2>
+    </div>
+    <div class="ioc-list">
+      {% for key, values in iocs.items() %}
+      {% if values %}
+      <h3>{{ key|upper }}</h3>
+      {% for value in values %}
+      <code>{{ value }}</code>
+      {% endfor %}
+      {% endif %}
+      {% endfor %}
+    </div>
+  </article>
+
+  <article class="panel">
+    <div class="panel-head">
+      <h2>DNS Records</h2>
+      <span class="status-pill">{{ enrichment.dns.status if enrichment.dns else "missing" }}</span>
+    </div>
+    {% set dns = enrichment.dns or {} %}
+    <div class="dns-records">
+      {% for record_type, values in (dns.records or {}).items() %}
+      <section>
+        <h3>{{ record_type }}</h3>
+        {% for value in values %}
+        <code>{{ value }}</code>
+        {% else %}
+        <span class="empty">No records</span>
+        {% endfor %}
+      </section>
+      {% else %}
+      <p class="empty">DNS data is not available for this older report.</p>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>Intel Source Cards</h2>
+  </div>
+  <div class="enrichment-list source-grid-wide">
+    {% for key, value in enrichment.items() %}
+    {% if key != "optional_sources" %}
+    <article>
+      <strong>{{ value.source if value.source else key }}</strong>
+      <span>{{ value.status }}</span>
+      <p>{{ value.detail }}</p>
+    </article>
+    {% endif %}
+    {% endfor %}
+    {% for key, value in (enrichment.optional_sources or {}).items() %}
+    <article>
+      <strong>{{ value.source if value.source else key }}</strong>
+      <span>{{ value.status }}</span>
+      <p>{{ value.detail }}</p>
+      {% if value.matches %}
+      <div class="source-evidence">
+        {% for match in value.matches %}
+        <div>
+          <b>{{ match.indicator_type or match.task_time or "match" }}</b>
+          <small>{{ match.indicator or match.page_url or match.result or match.status }}</small>
+          {% if match.suspicious is defined %}
+          <span>{{ match.malicious or 0 }} malicious / {{ match.suspicious or 0 }} suspicious / {{ match.harmless or 0 }} harmless</span>
+          {% elif match.abuse_confidence_score is defined %}
+          <span>{{ match.abuse_confidence_score }} confidence / {{ match.total_reports or 0 }} reports</span>
+          {% elif match.pulse_count is defined %}
+          <span>{{ match.pulse_count }} OTX pulses</span>
+          {% elif match.score is defined %}
+          <span>{{ match.score or 0 }} score / {{ "malicious" if match.malicious else "not malicious" }}</span>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>Analyst Recommendation</h2>
+  </div>
+  <p class="recommendation">{{ recommendation }}</p>
+</section>
+
+{% endblock %}
