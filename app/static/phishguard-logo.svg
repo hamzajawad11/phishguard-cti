@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="title desc">
+  <title id="title">PhishGuard logo</title>
+  <desc id="desc">A neon shield with a protected URL signal.</desc>
+  <defs>
+    <linearGradient id="shield" x1="12" y1="9" x2="84" y2="87" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#25f4ff"/>
+      <stop offset=".48" stop-color="#5b8cff"/>
+      <stop offset="1" stop-color="#ff3ea5"/>
+    </linearGradient>
+    <linearGradient id="core" x1="26" y1="24" x2="70" y2="74" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#35f39b"/>
+      <stop offset="1" stop-color="#25f4ff"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="3.2" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.145 0 0 0 0 0.957 0 0 0 0 1 0 0 0 .88 0"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="96" height="96" rx="20" fill="#07101a"/>
+  <path d="M48 9 78 20v24c0 20-11.7 34.8-30 43-18.3-8.2-30-23-30-43V20L48 9Z" fill="#0a1725" stroke="url(#shield)" stroke-width="4" filter="url(#glow)"/>
+  <path d="M31 45h34c5 0 9 4 9 9s-4 9-9 9H53" fill="none" stroke="url(#core)" stroke-width="5" stroke-linecap="round"/>
+  <path d="M45 33h-9c-6 0-10 4-10 9s4 9 10 9h25" fill="none" stroke="#f5fbff" stroke-width="5" stroke-linecap="round"/>
+  <path d="M57 27 69 39 57 51" fill="none" stroke="#ffbf47" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="31" cy="45" r="4" fill="#35f39b"/>
+  <circle cx="65" cy="63" r="4" fill="#ff3ea5"/>
+</svg>

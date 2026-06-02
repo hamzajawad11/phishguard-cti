@@ -1,0 +1,10 @@
+.git
+.venv
+__pycache__
+.pytest_cache
+*.pyc
+.env
+data/*.db
+outputs
+uvicorn.log
+uvicorn.err.log

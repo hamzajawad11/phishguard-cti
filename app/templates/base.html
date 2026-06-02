@@ -8,14 +8,27 @@
   <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
 </head>
 <body>
+  <div class="cyber-backdrop" aria-hidden="true">
+    <span class="scan-line"></span>
+    <span class="matrix-lane lane-a"></span>
+    <span class="matrix-lane lane-b"></span>
+    <span class="matrix-lane lane-c"></span>
+  </div>
   <aside class="sidebar">
     <a class="brand" href="/">
-      <span class="brand-mark">PG</span>
+      <img class="brand-logo" src="{{ url_for('static', path='phishguard-logo.svg') }}" alt="PhishGuard logo">
       <span>
         <strong>PhishGuard</strong>
         <small>CTI URL Intelligence</small>
       </span>
     </a>
+    <div class="system-card">
+      <span class="system-pulse"></span>
+      <div>
+        <strong>Threat Core Online</strong>
+        <small>Passive + dynamic intel ready</small>
+      </div>
+    </div>
     <nav class="nav">
       <a href="/" class="{{ 'active' if request.url.path == '/' else '' }}">Dashboard</a>
       <a href="/analyze" class="{{ 'active' if request.url.path == '/analyze' else '' }}">Analyze</a>

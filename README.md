@@ -47,6 +47,33 @@ http://127.0.0.1:8000
 python -m pytest
 ```
 
+## Web Deployment
+
+PhishGuard is deploy-ready for Python web hosts that support FastAPI, including Render, Railway, Fly.io, and Docker-based hosts.
+
+### Render from GitHub
+
+1. Push this repository to GitHub.
+2. In Render, create a new Blueprint or Web Service from the GitHub repository.
+3. Use these settings if creating a Web Service manually:
+   - Build command: `pip install -r requirements.txt`
+   - Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+   - Environment variable: `ENABLE_URLSCAN_SUBMISSION=false`
+4. Optional API keys can be added as environment variables:
+   - `VIRUSTOTAL_API_KEY`
+   - `ABUSEIPDB_API_KEY`
+   - `OTX_API_KEY`
+   - `URLSCAN_API_KEY`
+
+The app uses SQLite by default. On hosted platforms, analysis history persists only when the platform provides persistent storage for the configured `PHISHGUARD_DATA_DIR`.
+
+### Docker
+
+```powershell
+docker build -t phishguard-cti .
+docker run --rm -p 8000:8000 phishguard-cti
+```
+
 ## Optional Free API Keys
 
 The app works without API keys. To enable extra enrichment, copy `.env.example` to `.env` and add keys from free-tier accounts:

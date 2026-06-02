@@ -1,4 +1,5 @@
 from collections.abc import Generator
+import os
 from pathlib import Path
 
 from sqlalchemy import create_engine
@@ -6,14 +7,15 @@ from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = BASE_DIR / "data"
+DATA_DIR = Path(os.getenv("PHISHGUARD_DATA_DIR", BASE_DIR / "data"))
 DATA_DIR.mkdir(exist_ok=True)
 
-DATABASE_URL = f"sqlite:///{DATA_DIR / 'phishguard.db'}"
+DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DATA_DIR / 'phishguard.db'}")
+CONNECT_ARGS = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False},
+    connect_args=CONNECT_ARGS,
     future=True,
 )
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
