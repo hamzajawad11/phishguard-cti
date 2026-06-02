@@ -1,33 +1,101 @@
-# PhishGuard: CTI Phishing URL Intelligence Platform
+# PhishGuard CTI
 
-PhishGuard is a Cyber Threat Intelligence project focused on suspicious URL and domain analysis, IOC extraction, risk scoring, dashboarding, and report export. It is designed for a university CTI project demo and runs without paid API keys.
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Vercel](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://phishguard-cti.vercel.app/)
+[![Tests](https://github.com/hamzajawad11/phishguard-cti/actions/workflows/tests.yml/badge.svg)](https://github.com/hamzajawad11/phishguard-cti/actions/workflows/tests.yml)
 
-## Features
+PhishGuard is a cyber threat intelligence platform for suspicious URL and domain investigation. It turns links into explainable risk scores, enriched intelligence, dynamic sandbox evidence, IOC extraction, saved history, and analyst-ready reports.
 
-- Analyze suspicious URLs and domains, one or many at a time.
-- Detect phishing signals: no HTTPS, IP hosts, punycode, risky TLDs, URL shorteners, suspicious keywords, brand impersonation, redirect parameters, deep paths, encoded characters, and abnormal length.
-- Extract supporting IOCs from submitted text: URLs, domains, IPs, hashes, and CVEs.
-- Optional free/public enrichment:
-  - URLHaus community lookup: https://urlhaus.abuse.ch/api/
-  - CISA Known Exploited Vulnerabilities JSON: https://www.cisa.gov/known-exploited-vulnerabilities-catalog
-- Advanced passive intelligence:
-  - RDAP/domain age lookup for creation date, registrar, expiry date, nameservers, and newly registered domain warnings.
-  - DNS lookups for A, AAAA, MX, NS, and TXT records.
-  - Redirect tracing without rendering suspicious pages.
-  - Optional free API-key sources: VirusTotal, AbuseIPDB, AlienVault OTX, and urlscan.io.
-- Optional active/dynamic analysis:
-  - Submit URLs to urlscan.io for browser-based sandbox scanning when enabled.
-  - Capture urlscan result links, screenshots, final page metadata, and observed downloads.
-  - Extract downloaded file hashes and check those hashes with VirusTotal.
-- Save all analyses to SQLite.
-- Premium SOC dashboard with severity counts, average risk, source health, 7-day trend, recent activity, high-risk findings, and top domains.
-- Export history as CSV.
-- Export each investigation as JSON or printable HTML report.
+Live demo: [phishguard-cti.vercel.app](https://phishguard-cti.vercel.app/)
 
-## Setup
+Safe sandbox demo URL:
+
+```text
+https://phishguard-cti.vercel.app/secure-login/account/verify/billing/update?redirect=http%3A%2F%2F192.168.10.20%2Fportal&continue=microsoft-office-sso&session=verify-account-payment-update&token=ZXhhbXBsZS1kZW1v
+```
+
+This demo URL is intentionally suspicious-looking but harmless. It exists to test PhishGuard's scoring, dynamic urlscan.io screenshot capture, and download-detection workflow.
+
+## Preview
+
+![PhishGuard dashboard](docs/assets/dashboard-futuristic.png)
+
+![PhishGuard analyzer](docs/assets/analyze-futuristic.png)
+
+## What It Does
+
+PhishGuard is built for tactical CTI and SOC-style triage:
+
+- Analyzes URLs, domains, and suspicious text submissions.
+- Extracts IOCs including URLs, domains, IP addresses, hashes, and CVEs.
+- Scores risk from transparent evidence instead of black-box labels.
+- Enriches indicators with RDAP, DNS, redirects, feeds, optional reputation APIs, and urlscan.io.
+- Supports active dynamic scanning through urlscan.io.
+- Detects observed downloads and checks file hashes with VirusTotal.
+- Saves investigations to SQLite for local/demo use.
+- Exports reports as JSON, printable HTML, and CSV history.
+
+## Key Capabilities
+
+| Area | Capability |
+| --- | --- |
+| URL heuristics | HTTPS checks, IP hosts, punycode, risky TLDs, URL shorteners, long URLs, deep paths, encoded characters, redirect parameters |
+| Phishing signals | Suspicious keywords, brand impersonation hints, embedded IP indicators |
+| Passive intelligence | RDAP domain age, registrar, expiry, DNS A/AAAA/MX/NS/TXT records, redirect trace |
+| Public feeds | URLHaus, PhishStats, CISA Known Exploited Vulnerabilities catalog |
+| Optional APIs | VirusTotal, AbuseIPDB, AlienVault OTX, urlscan.io |
+| Dynamic sandbox | urlscan.io browser scan, screenshot link, DOM link, final URL, observed downloads |
+| File verdicts | Download hash extraction and VirusTotal file-hash lookup |
+| Reporting | Dashboard, history, filters, JSON export, HTML report export, CSV export |
+
+## Architecture
+
+```mermaid
+flowchart LR
+    A["User submits URL, domain, or text"] --> B["FastAPI routes"]
+    B --> C["Analyzer"]
+    C --> D["Local heuristics and IOC extraction"]
+    C --> E["Passive enrichment"]
+    E --> E1["RDAP"]
+    E --> E2["DNS"]
+    E --> E3["Redirect trace"]
+    E --> F["Threat feeds"]
+    F --> F1["URLHaus"]
+    F --> F2["PhishStats"]
+    F --> F3["CISA KEV"]
+    C --> G["Optional APIs"]
+    G --> G1["VirusTotal"]
+    G --> G2["AbuseIPDB"]
+    G --> G3["AlienVault OTX"]
+    G --> G4["urlscan.io"]
+    G4 --> H["Dynamic sandbox screenshot and downloads"]
+    H --> I["VirusTotal file hash verdicts"]
+    D --> J["Risk score and evidence"]
+    E --> J
+    F --> J
+    G --> J
+    I --> J
+    J --> K["SQLite history and reports"]
+```
+
+## Live Demo Notes
+
+The hosted Vercel demo is useful for UI and workflow testing, but Vercel serverless storage is temporary. SQLite records can reset or appear inconsistent across instances.
+
+For reliable long-term history and stable report URLs, deploy with persistent storage:
+
+- Vercel Postgres
+- Neon Postgres
+- Supabase Postgres
+- Railway Postgres
+- Render or Fly.io with persistent disk/database
+
+## Quick Start
 
 ```powershell
-cd "C:\Users\hamza\Downloads\cti project"
+git clone https://github.com/hamzajawad11/phishguard-cti.git
+cd phishguard-cti
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
@@ -41,46 +109,17 @@ Open:
 http://127.0.0.1:8000
 ```
 
-## Test
+## Optional API Keys
 
-```powershell
-python -m pytest
-```
+The app works without keys, but optional providers improve enrichment quality.
 
-## Web Deployment
-
-PhishGuard is deploy-ready for Python web hosts that support FastAPI, including Render, Railway, Fly.io, and Docker-based hosts.
-
-### Render from GitHub
-
-1. Push this repository to GitHub.
-2. In Render, create a new Blueprint or Web Service from the GitHub repository.
-3. Use these settings if creating a Web Service manually:
-   - Build command: `pip install -r requirements.txt`
-   - Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-   - Environment variable: `ENABLE_URLSCAN_SUBMISSION=false`
-4. Optional API keys can be added as environment variables:
-   - `VIRUSTOTAL_API_KEY`
-   - `ABUSEIPDB_API_KEY`
-   - `OTX_API_KEY`
-   - `URLSCAN_API_KEY`
-
-The app uses SQLite by default. On hosted platforms, analysis history persists only when the platform provides persistent storage for the configured `PHISHGUARD_DATA_DIR`.
-
-### Docker
-
-```powershell
-docker build -t phishguard-cti .
-docker run --rm -p 8000:8000 phishguard-cti
-```
-
-## Optional Free API Keys
-
-The app works without API keys. To enable extra enrichment, copy `.env.example` to `.env` and add keys from free-tier accounts:
+Copy the example file:
 
 ```powershell
 Copy-Item .env.example .env
 ```
+
+Configure values:
 
 ```text
 VIRUSTOTAL_API_KEY=
@@ -94,16 +133,16 @@ URLSCAN_POLL_INTERVAL_SECONDS=5
 URLSCAN_POLL_TIMEOUT_SECONDS=45
 ```
 
-Security rules:
+Important:
 
-- Do not commit `.env`.
-- Do not paste keys into reports or screenshots.
-- `ENABLE_URLSCAN_SUBMISSION=false` searches existing urlscan.io results without submitting the URL.
-- `ENABLE_URLSCAN_SUBMISSION=true` actively submits the URL to urlscan.io for dynamic browser scanning. The app then extracts observed download hashes and checks them with VirusTotal. Use `URLSCAN_VISIBILITY=unlisted` or `private` when your account supports it to reduce exposure.
+- Never commit `.env`.
+- Keep `ENABLE_URLSCAN_SUBMISSION=false` for passive urlscan.io search only.
+- Set `ENABLE_URLSCAN_SUBMISSION=true` only when you intentionally want to submit URLs to urlscan.io for dynamic browser scanning.
+- Use `URLSCAN_VISIBILITY=unlisted` or `private` when supported by your account.
 
-## Sample Inputs
+## Demo Inputs
 
-Use `sample_inputs.txt` or click `Load Sample Data` in the sidebar. The main input should be a URL or domain.
+Use these for a quick classroom or portfolio demonstration:
 
 ```text
 https://www.microsoft.com/security
@@ -114,52 +153,76 @@ paypal-login-check.xyz
 verify-account-update.top
 ```
 
-## CTI Value
+Safe dynamic sandbox demo:
 
-PhishGuard supports tactical cyber threat intelligence by producing actionable indicators and analyst-ready reports. It helps a SOC or CTI analyst decide whether a suspicious URL or domain should be blocked, escalated, or monitored.
+```text
+https://phishguard-cti.vercel.app/secure-login/account/verify/billing/update?redirect=http%3A%2F%2F192.168.10.20%2Fportal&continue=microsoft-office-sso&session=verify-account-payment-update&token=ZXhhbXBsZS1kZW1v
+```
 
-## Suggested Final Report Outline
+## Testing
 
-1. Introduction and problem statement
-2. Cyber Threat Intelligence background
-3. Phishing URL threat model
-4. System architecture
-5. Passive enrichment methodology: RDAP, DNS, redirects, URLHaus, CISA KEV, optional APIs
-6. Detection and scoring methodology
-7. Screenshots and demo workflow
-8. Testing and validation
-9. Limitations and future work
-10. Conclusion
+```powershell
+python -m pytest
+```
 
-## Demo Talking Points
+Current local suite:
 
-- This is a passive CTI system for suspicious URLs/domains: it does not render or interact with malicious web pages.
-- It explains every score with evidence, which is important for SOC analysts.
-- It combines local heuristics, public no-key feeds, domain registration intelligence, DNS intelligence, redirect behavior, and optional free API-key reputation services.
-- Reports are exportable for incident documentation or classroom submission.
+```text
+34 tests passing
+```
+
+## Deployment
+
+### Vercel
+
+This repository includes a Vercel-compatible FastAPI entrypoint at:
+
+```text
+app/app.py
+```
+
+Vercel detects the FastAPI app and deploys from the GitHub repository.
+
+### Render
+
+`render.yaml` is included for Render-style Python hosting:
+
+```text
+Build command: pip install -r requirements.txt
+Start command: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+```
+
+### Docker
+
+```powershell
+docker build -t phishguard-cti .
+docker run --rm -p 8000:8000 phishguard-cti
+```
 
 ## Project Structure
 
 ```text
 app/
-  analyzer.py      URL parsing, IOC extraction, and risk scoring
-  enrichment.py    URLHaus and CISA KEV public enrichment
-  domain_intel.py  RDAP/domain age intelligence
-  dns_intel.py     DNS record enrichment
-  redirects.py     Passive redirect tracing
-  optional_sources.py VirusTotal, AbuseIPDB, OTX, urlscan.io integrations
-  main.py          FastAPI routes and web pages
-  models.py        SQLite models
-  reports.py       CSV, JSON, and HTML report helpers
-  static/          CSS and JavaScript
-  templates/       Server-rendered dashboard pages
-tests/             Backend tests
-data/              SQLite database created at runtime
+  analyzer.py          URL parsing, IOC extraction, and risk scoring
+  config.py            Timeouts, limits, and shared configuration
+  database.py          SQLAlchemy engine and session management
+  dns_intel.py         DNS record enrichment
+  domain_intel.py      RDAP/domain-age intelligence
+  enrichment.py        URLHaus, PhishStats, and CISA KEV enrichment
+  main.py              FastAPI routes and web pages
+  optional_sources.py  VirusTotal, AbuseIPDB, OTX, and urlscan.io integrations
+  redirects.py         Passive redirect tracing
+  reports.py           CSV, JSON, and HTML report rendering
+  static/              UI CSS, JavaScript, and logo
+  templates/           Jinja dashboard, analyzer, history, and report pages
+tests/                 Backend tests
+data/                  Runtime SQLite database
 ```
 
-## Notes
+## Security Scope
 
-- The app still works if public feed lookups fail.
-- No paid API key is required.
-- The SQLite database is created automatically at `data/phishguard.db`.
-- Existing old reports still open, but only new scans include the advanced enrichment fields.
+PhishGuard is a defensive CTI project. It does not collect credentials, execute downloaded files, or perform exploitation. The included attacker-style demo URL is intentionally harmless and exists only for detection, screenshot, and download-observation testing.
+
+## Authors
+
+Ali Ahsan / Hamza Jawad / Arun Lal / Taha Nasir
