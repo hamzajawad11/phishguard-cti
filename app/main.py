@@ -188,6 +188,19 @@ def export_csv(db: Annotated[Session, Depends(get_db)]):
     )
 
 
+@app.get("/test-download", response_class=PlainTextResponse)
+def test_download():
+    content = (
+        "PhishGuard safe download test file.\n"
+        "This file is intentionally harmless and exists only to test download detection workflows.\n"
+    )
+    return PlainTextResponse(
+        content,
+        media_type="application/octet-stream",
+        headers={"Content-Disposition": "attachment; filename=phishguard-safe-download-test.txt"},
+    )
+
+
 @app.post("/sample-data")
 def sample_data(db: Annotated[Session, Depends(get_db)]):
     samples = [
