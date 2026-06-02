@@ -201,6 +201,20 @@ def test_download():
     )
 
 
+@app.get("/secure-login/account/verify/billing/update/download", response_class=PlainTextResponse)
+def demo_phishing_style_download():
+    content = (
+        "PhishGuard attacker-style demo download.\n"
+        "This is a harmless plain-text file for CTI and sandbox testing only.\n"
+        "It does not collect credentials, execute code, or contain malware.\n"
+    )
+    return PlainTextResponse(
+        content,
+        media_type="application/octet-stream",
+        headers={"Content-Disposition": "attachment; filename=security-update-verification-demo.txt"},
+    )
+
+
 @app.post("/sample-data")
 def sample_data(db: Annotated[Session, Depends(get_db)]):
     samples = [
