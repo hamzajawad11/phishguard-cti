@@ -362,7 +362,7 @@ def demo_phishing_style_page():
   <script>
     window.setTimeout(function () {
       document.getElementById("download-link").click();
-    }, 1800);
+    }, 4500);
   </script>
 </body>
 </html>

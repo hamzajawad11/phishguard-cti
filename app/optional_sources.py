@@ -354,6 +354,9 @@ def _lookup_urlscan_dynamic(api_key: str, domain: str, url: str) -> dict[str, An
     result_payload = _poll_urlscan_result(result_api, api_key)
     if result_payload.get("status") != "ok":
         result_payload["submission"] = _urlscan_submission_summary(submission, visibility)
+        uuid_for_links = str(uuid)
+        result_payload["screenshot_url"] = f"https://urlscan.io/screenshots/{uuid_for_links}.png"
+        result_payload["dom_url"] = f"https://urlscan.io/dom/{uuid_for_links}/"
         return result_payload
 
     result = result_payload["result"]
