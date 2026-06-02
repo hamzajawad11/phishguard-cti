@@ -100,6 +100,9 @@
 {% set sandbox = optional_sources.urlscan or {} %}
 {% set vt_files = optional_sources.virustotal_files or {} %}
 {% if sandbox.mode == "dynamic_submission" %}
+{% set sandbox_submission = sandbox.get("submission") if sandbox.get("submission") is mapping else {} %}
+{% set sandbox_page = sandbox.get("page") if sandbox.get("page") is mapping else {} %}
+{% set sandbox_verdict = sandbox.get("verdict") if sandbox.get("verdict") is mapping else {} %}
 <section class="panel">
   <div class="panel-head">
     <h2>Dynamic Sandbox Analysis</h2>
@@ -109,14 +112,14 @@
     <div>
       <dl class="summary-list">
         <dt>Mode</dt><dd>Active urlscan.io browser scan</dd>
-        <dt>Visibility</dt><dd>{{ sandbox.submission.visibility or "unlisted" }}</dd>
-        <dt>Final URL</dt><dd>{{ sandbox.page.url or analysis.normalized_url }}</dd>
-        <dt>Page Title</dt><dd>{{ sandbox.page.title or "Unknown" }}</dd>
-        <dt>Page IP</dt><dd>{{ sandbox.page.ip or "Unknown" }}</dd>
-        <dt>urlscan Score</dt><dd>{{ sandbox.verdict.score or 0 }}</dd>
+        <dt>Visibility</dt><dd>{{ sandbox_submission.visibility or "unlisted" }}</dd>
+        <dt>Final URL</dt><dd>{{ sandbox_page.url or analysis.normalized_url }}</dd>
+        <dt>Page Title</dt><dd>{{ sandbox_page.title or "Unknown" }}</dd>
+        <dt>Page IP</dt><dd>{{ sandbox_page.ip or "Unknown" }}</dd>
+        <dt>urlscan Score</dt><dd>{{ sandbox_verdict.score or 0 }}</dd>
       </dl>
       <div class="sandbox-links">
-        {% if sandbox.submission.result %}<a href="{{ sandbox.submission.result }}" target="_blank" rel="noopener">Open urlscan result</a>{% endif %}
+        {% if sandbox_submission.result %}<a href="{{ sandbox_submission.result }}" target="_blank" rel="noopener">Open urlscan result</a>{% endif %}
         {% if sandbox.screenshot_url %}<a href="{{ sandbox.screenshot_url }}" target="_blank" rel="noopener">Screenshot</a>{% endif %}
         {% if sandbox.dom_url %}<a href="{{ sandbox.dom_url }}" target="_blank" rel="noopener">DOM snapshot</a>{% endif %}
       </div>
