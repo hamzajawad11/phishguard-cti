@@ -201,6 +201,175 @@ def test_download():
     )
 
 
+@app.get("/secure-login/account/verify/billing/update", response_class=HTMLResponse)
+def demo_phishing_style_page():
+    html = """
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Secure Account Verification</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07111f;
+      --panel: rgba(11, 22, 38, 0.92);
+      --line: rgba(54, 214, 255, 0.35);
+      --text: #f5fbff;
+      --muted: #9eb3c7;
+      --cyan: #25f4ff;
+      --pink: #ff4d8d;
+      --green: #35f39b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      background:
+        linear-gradient(rgba(37, 244, 255, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 77, 141, 0.08) 1px, transparent 1px),
+        radial-gradient(circle at 20% 10%, rgba(37, 244, 255, 0.22), transparent 32%),
+        radial-gradient(circle at 90% 90%, rgba(255, 77, 141, 0.22), transparent 30%),
+        var(--bg);
+      background-size: 46px 46px, 46px 46px, auto, auto, auto;
+      color: var(--text);
+      font-family: Inter, Segoe UI, Arial, sans-serif;
+      letter-spacing: 0;
+    }
+    main {
+      width: min(920px, calc(100vw - 32px));
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 22px;
+      align-items: stretch;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45), 0 0 48px rgba(37, 244, 255, 0.12);
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 3px;
+      background: linear-gradient(90deg, var(--cyan), var(--pink), var(--green));
+    }
+    .eyebrow {
+      color: var(--cyan);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 16px 0 12px;
+      font-size: clamp(34px, 6vw, 62px);
+      line-height: 0.95;
+    }
+    p {
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.55;
+    }
+    .status {
+      display: grid;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .status div {
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.045);
+    }
+    .status strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+    .download {
+      display: inline-flex;
+      margin-top: 24px;
+      min-height: 46px;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 18px;
+      background: linear-gradient(135deg, rgba(37, 244, 255, 0.25), rgba(255, 77, 141, 0.22));
+      color: white;
+      font-weight: 900;
+      text-decoration: none;
+    }
+    .side {
+      display: grid;
+      gap: 14px;
+    }
+    .badge {
+      color: #07111f;
+      background: var(--green);
+      border-radius: 999px;
+      display: inline-flex;
+      font-weight: 900;
+      padding: 6px 10px;
+      width: fit-content;
+    }
+    .terminal {
+      font-family: Consolas, monospace;
+      color: #bdf8ff;
+      white-space: pre-wrap;
+      font-size: 14px;
+    }
+    @media (max-width: 760px) {
+      main { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="card">
+      <span class="eyebrow">Safe PhishGuard Demo Page</span>
+      <h1>Secure account verification required</h1>
+      <p>
+        This page intentionally uses attacker-style wording and URL structure for sandbox,
+        screenshot, redirect, keyword, and download-detection testing.
+      </p>
+      <div class="status">
+        <div><strong>Verification status</strong><span>Pending document package download</span></div>
+        <div><strong>Session type</strong><span>Training simulation only</span></div>
+      </div>
+      <a id="download-link" class="download" href="/secure-login/account/verify/billing/update/download">
+        Download verification package
+      </a>
+    </section>
+    <aside class="card side">
+      <span class="badge">Harmless Demo</span>
+      <p>No credentials are collected. No code is executed. The download is a plain text file.</p>
+      <div class="terminal">Signals for CTI testing:
+- login / verify / billing / update
+- redirect-style query parameters
+- visible screenshot target
+- automatic safe file download</div>
+    </aside>
+  </main>
+  <script>
+    window.setTimeout(function () {
+      document.getElementById("download-link").click();
+    }, 1800);
+  </script>
+</body>
+</html>
+"""
+    return HTMLResponse(html)
+
+
 @app.get("/secure-login/account/verify/billing/update/download", response_class=PlainTextResponse)
 def demo_phishing_style_download():
     content = (
