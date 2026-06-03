@@ -45,6 +45,14 @@ def test_csv_export_returns_header_row(client):
     assert "id,created_at,severity,score,domain,url" in response.text
 
 
+def test_json_export_returns_analysis_collection(client):
+    response = client.get("/export/json")
+    assert response.status_code == 200
+    payload = response.json()
+    assert "count" in payload
+    assert "analyses" in payload
+
+
 def test_missing_analysis_returns_404(client):
     response = client.get("/analysis/99999999")
     assert response.status_code == 404

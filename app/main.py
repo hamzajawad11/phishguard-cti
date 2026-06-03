@@ -188,6 +188,19 @@ def export_csv(db: Annotated[Session, Depends(get_db)]):
     )
 
 
+@app.get("/export/json")
+def export_json(db: Annotated[Session, Depends(get_db)]):
+    analyses = db.scalars(select(Analysis).order_by(Analysis.created_at.desc())).all()
+    return JSONResponse(
+        {
+            "generated_at": datetime.now(UTC).isoformat(),
+            "count": len(analyses),
+            "analyses": [analysis_to_dict(analysis) for analysis in analyses],
+        },
+        headers={"Content-Disposition": "attachment; filename=phishguard-history.json"},
+    )
+
+
 @app.get("/test-download", response_class=PlainTextResponse)
 def test_download():
     content = (

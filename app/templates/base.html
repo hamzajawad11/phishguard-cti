@@ -33,7 +33,9 @@
       <a href="/" class="{{ 'active' if request.url.path == '/' else '' }}">Dashboard</a>
       <a href="/analyze" class="{{ 'active' if request.url.path == '/analyze' else '' }}">Analyze</a>
       <a href="/history" class="{{ 'active' if request.url.path == '/history' else '' }}">History</a>
-      <a href="/export/csv">Export CSV</a>
+      <span class="nav-label">Export Data</span>
+      <a href="/export/csv">CSV</a>
+      <a href="/export/json">JSON</a>
     </nav>
     <form action="/sample-data" method="post" class="sample-form">
       <button type="submit">Load Sample Data</button>
